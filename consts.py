@@ -1,5 +1,5 @@
 __author__ = "kai_Ker"
-__version__ = "1.0.3"
+__version__ = "1.1.0"
 
 
 class MainWindow:
