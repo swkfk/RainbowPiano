@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtProperty
 
 
 class ColoredLabel(QLabel):
@@ -34,6 +34,11 @@ class ColoredLabel(QLabel):
         palette.setColor(self.foregroundRole(), text_color)
         self.setPalette(palette)
         return old_background_color, old_text_color
+
+    def _set_background_color(self, background_color: QColor):
+        self.set_color(background_color, self.palette().color(self.foregroundRole()))
+
+    color_anim = pyqtProperty(QColor, fset=_set_background_color)
 
     def set_font(self, size: int = 20, weight: int = 500):
         ft = QFont()

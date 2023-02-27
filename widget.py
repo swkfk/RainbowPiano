@@ -1,7 +1,7 @@
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtMultimedia import QSoundEffect
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QPropertyAnimation
 
 import color_palette
 import consts
@@ -24,6 +24,8 @@ class MainWidget(QWidget):
             align="rt"
         )
         self.label_center.set_color(QtGui.QColor(102, 204, 255), QtGui.QColor(0, 0, 0, 100))
+        self.main_label_anim = QPropertyAnimation(self.label_center, b"color_anim")
+        self.main_label_anim.setDuration(300)
 
         self.hint_labels = []
         for idx in range(7):
@@ -47,12 +49,18 @@ class MainWidget(QWidget):
         tup = color_palette.RainbowColor.get_color_by_board(brd)
         s_tup = ", ".join([str(ss).zfill(3) for ss in tup[1][0:3]])
         tone = color_palette.RainbowColor.get_tone_by_board(brd)
+
         self.label_center.setText(f"{tone[0]} 🎵 {tup[0]}: RGB({s_tup})")
-        self.label_center.set_color(QtGui.QColor(*tup[1]), QtGui.QColor(0, 0, 0, 100))
+
+        self.main_label_anim.setStartValue(self.label_center.palette().color(self.label_center.backgroundRole()))
+        self.main_label_anim.setEndValue(QtGui.QColor(*tup[1]))
+
         sound = QSoundEffect(self)
         sound.setSource(QUrl.fromLocalFile(".\\sound\\" + tone[1]))
         sound.setLoopCount(1)
         sound.setVolume(1)
+
+        self.main_label_anim.start()
         sound.play()
         # sound.deleteLater()
 
