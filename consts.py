@@ -1,5 +1,5 @@
 __author__ = "kai_Ker"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 class MainWindow:
@@ -11,3 +11,6 @@ class MainWindow:
         @staticmethod
         def hint_geometry(idx) -> tuple[int, int, int, int]:
             return 170 * idx + 20, 360, 140, 200
+
+    class AutoPlay:
+        pass

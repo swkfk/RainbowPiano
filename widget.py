@@ -1,14 +1,20 @@
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtMultimedia import QSoundEffect
-from PyQt6.QtCore import Qt, QUrl, QPropertyAnimation
+from PyQt6.QtCore import Qt, QUrl, QPropertyAnimation, pyqtSignal
 
 import color_palette
 import consts
 from colored_label import ColoredLabel
+from auto_play import AutoPlayThread
 
 
 class MainWidget(QWidget):
+    pausePlay = pyqtSignal()
+    resumePlay = pyqtSignal()
+    loadPlay = pyqtSignal(str)
+    changePlay = pyqtSignal(int)
+
     def __init__(self):
         super(MainWidget, self).__init__()
 
@@ -41,10 +47,18 @@ class MainWidget(QWidget):
                 )
             )
 
+        # auto_play thread
+        self.autoplay_thread = AutoPlayThread(self, self.pausePlay, self.resumePlay, self.changePlay, self.loadPlay)
+
+        # signal & slot
+        self.autoplay_thread.keyPressed.connect(lambda x: self.key_pressed("ZXCVBNM"[x]))
+
         # show window
         self.show()
+        self.autoplay_thread.start()
 
     def key_pressed(self, key: str):
+        print(key)
         brd = "ZXCVBNM".index(key)
         tup = color_palette.RainbowColor.get_color_by_board(brd)
         s_tup = ", ".join([str(ss).zfill(3) for ss in tup[1][0:3]])
@@ -62,7 +76,6 @@ class MainWidget(QWidget):
 
         self.main_label_anim.start()
         sound.play()
-        # sound.deleteLater()
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
         if a0.isAutoRepeat():
@@ -83,3 +96,18 @@ class MainWidget(QWidget):
                 self.key_pressed("N")
             case Qt.Key.Key_M | Qt.Key.Key_7:
                 self.key_pressed("M")
+            # test
+            case Qt.Key.Key_L:
+                self.loadPlay.emit(".\\music\\欢乐颂.mnote")
+                self.resumePlay.emit()
+            case Qt.Key.Key_K:
+                self.loadPlay.emit(".\\music\\一闪一闪亮晶晶.mnote")
+                self.resumePlay.emit()
+            case Qt.Key.Key_P:
+                self.pausePlay.emit()
+            case Qt.Key.Key_R:
+                self.resumePlay.emit()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.autoplay_thread.terminate()
+        a0.accept()
