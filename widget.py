@@ -57,20 +57,21 @@ class MainWidget(QWidget):
         # sound.deleteLater()
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
+        if a0.isAutoRepeat():
+            return
         key = a0.key()
         match key:
-            case Qt.Key.Key_Z:
+            case Qt.Key.Key_Z | Qt.Key.Key_1:
                 self.key_pressed("Z")
-            case Qt.Key.Key_X:
+            case Qt.Key.Key_X | Qt.Key.Key_2:
                 self.key_pressed("X")
-            case Qt.Key.Key_C:
+            case Qt.Key.Key_C | Qt.Key.Key_3:
                 self.key_pressed("C")
-            case Qt.Key.Key_V:
+            case Qt.Key.Key_V | Qt.Key.Key_4:
                 self.key_pressed("V")
-            case Qt.Key.Key_B:
+            case Qt.Key.Key_B | Qt.Key.Key_5:
                 self.key_pressed("B")
-            case Qt.Key.Key_N:
+            case Qt.Key.Key_N | Qt.Key.Key_6:
                 self.key_pressed("N")
-            case Qt.Key.Key_M:
+            case Qt.Key.Key_M | Qt.Key.Key_7:
                 self.key_pressed("M")
-
