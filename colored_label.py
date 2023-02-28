@@ -13,16 +13,7 @@ class ColoredLabel(QLabel):
             self.set_color(color)
         self.set_font()
         self.setGeometry(*geometry)
-        alignment = {
-            "l": Qt.AlignmentFlag.AlignLeft,
-            "m": Qt.AlignmentFlag.AlignHCenter,
-            "r": Qt.AlignmentFlag.AlignRight
-        }[align[0]]
-        alignment |= {
-            "t": Qt.AlignmentFlag.AlignTop,
-            "m": Qt.AlignmentFlag.AlignVCenter,
-            "b": Qt.AlignmentFlag.AlignBottom
-        }[align[1]]
+        alignment = AlignedLabel.get_alignment(align)
         self.setAlignment(alignment)
 
     def set_color(self, background_color: QColor, text_color: QColor = QColor(0, 0, 0)) -> tuple[QColor, QColor]:
@@ -45,3 +36,23 @@ class ColoredLabel(QLabel):
         ft.setWeight(weight)
         ft.setPointSize(size)
         self.setFont(ft)
+
+
+class AlignedLabel(QLabel):
+    def __init__(self, parent, align="lm"):
+        super().__init__(parent)
+        self.setAlignment(self.get_alignment(align))
+
+    @staticmethod
+    def get_alignment(align_string):
+        alignment = {
+            "l": Qt.AlignmentFlag.AlignLeft,
+            "m": Qt.AlignmentFlag.AlignHCenter,
+            "r": Qt.AlignmentFlag.AlignRight
+        }[align_string[0]]
+        alignment |= {
+            "t": Qt.AlignmentFlag.AlignTop,
+            "m": Qt.AlignmentFlag.AlignVCenter,
+            "b": Qt.AlignmentFlag.AlignBottom
+        }[align_string[1]]
+        return alignment

@@ -5,7 +5,9 @@ from read_mnote import mnote_reader
 
 class AutoPlayThread(QThread):
     keyPressed = pyqtSignal(int)
-    loadDown = pyqtSignal(str)
+    loadDown = pyqtSignal(str, int)
+    playChange = pyqtSignal(int)
+    overSignal = pyqtSignal()
 
     def __init__(self, parent, pause_signal, resume_signal, change_signal, load_signal):
         super().__init__(parent)
@@ -28,16 +30,25 @@ class AutoPlayThread(QThread):
     def load(self, path):
         self.play_idx = 0
         self.info, self.note = mnote_reader(path)
-        self.loadDown.emit(f"《{self.info['title']}》 {self.info['author']} {self.info['bpm']} BPM")
+        self.loadDown.emit(
+            f"《{self.info['title']}》 {self.info['author']}\n{len(self.note)} 个音符",
+            len(self.note)
+        )
+        self.playChange.emit(self.play_idx)
 
     def run(self) -> None:
         while True:
-            if not self.on_play or self.play_idx >= len(self.note):
-                self.msleep(100)
+            if not self.on_play:
                 continue
+            if self.play_idx >= len(self.note):
+                self.on_play = False
+                self.overSignal.emit()
+                continue
+            print(f"{self.play_idx=}")
+            self.playChange.emit(self.play_idx)
             self.keyPressed.emit(self.note[self.play_idx][0] - 1)  # This -1 is important!
             self.msleep(int(60000 / (self.info["bpm"] * self.info["beat"]) * self.note[self.play_idx][1]))
-            self.play_idx += 1
+            self.play_idx += 1 if self.on_play else 0
 
     def pause(self):
         self.on_play = False
@@ -46,4 +57,4 @@ class AutoPlayThread(QThread):
         self.on_play = True
 
     def change(self, val: int):
-        pass
+        self.play_idx = val
