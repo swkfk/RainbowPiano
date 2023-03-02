@@ -1,4 +1,14 @@
 class RainbowColor:
+    eng_name = [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "cyan",
+        "blue",
+        "purple",
+    ]
+
     color_lst = [
         ("赤", (255, 0, 0)),
         ("橙", (255, 165, 0)),

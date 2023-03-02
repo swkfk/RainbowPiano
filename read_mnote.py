@@ -42,3 +42,7 @@ def mnote_reader(path: str):
         pass
 
     return info, note
+
+
+def note_width_ms(bpm, beat, width):
+    return int(60000 / (bpm * beat) * width)

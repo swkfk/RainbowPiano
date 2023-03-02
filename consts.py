@@ -1,5 +1,5 @@
 __author__ = "kai_Ker"
-__version__ = "1.2.5"
+__version__ = "1.3.3"
 
 
 class MainWindow:
@@ -18,6 +18,9 @@ class MainWindow:
         load_geometry = (910, 600, 70, 35)
         info_geometry = (20, 600, 190, 35)
         file_geometry = (990, 600, 190, 35)
+
+    class CreateVideo:
+        button_geometry = (0, 0, 60, 30)
 
 
 class Style:

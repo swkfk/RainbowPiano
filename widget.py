@@ -1,14 +1,16 @@
 import os.path
 
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import QWidget, QSlider, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QWidget, QSlider, QPushButton, QFileDialog, QProgressDialog, QMessageBox
 from PyQt6.QtMultimedia import QSoundEffect
 from PyQt6.QtCore import Qt, QUrl, QPropertyAnimation, pyqtSignal
 
 import color_palette
 import consts
+import read_mnote
 from colored_label import ColoredLabel, AlignedLabel
 from auto_play import AutoPlayThread
+from video_spawner import VideoProcessThread
 
 
 class MainWidget(QWidget):
@@ -16,11 +18,13 @@ class MainWidget(QWidget):
     resumePlay = pyqtSignal()
     loadPlay = pyqtSignal(str)
     changePlay = pyqtSignal(int)
+    startVideoProcess = pyqtSignal()
 
     def __init__(self):
         super(MainWidget, self).__init__()
 
         # window information
+        self.video_progress = None
         self.setWindowTitle(f"Rainbow Piano - PC edition - V{consts.__version__} - {consts.__author__}")
         self.setFixedSize(*consts.MainWindow.size)
 
@@ -67,9 +71,15 @@ class MainWidget(QWidget):
         self.file_label.setGeometry(*consts.MainWindow.AutoPlay.file_geometry)
         self.file_label.setWordWrap(True)
 
-        # auto_play thread
+        # create video
+        self.video_button = QPushButton("导出视频", self)
+        self.video_button.setGeometry(*consts.MainWindow.CreateVideo.button_geometry)
+        self.video_button.setEnabled(False)
+
+        # threads
         self.autoplay_thread = AutoPlayThread(self, self.pausePlay, self.resumePlay, self.changePlay,
                                               self.loadPlay)
+        self.video_process_thread = VideoProcessThread(self)
 
         # signal & slot
         self.autoplay_thread.keyPressed.connect(lambda x: self.key_pressed("ZXCVBNM"[x]))
@@ -79,10 +89,35 @@ class MainWidget(QWidget):
         self.play_slide.valueChanged.connect(lambda x: self.changePlay.emit(x))
         self.play_button.clicked.connect(self.play_button_pressed)
         self.load_button.clicked.connect(self.choose_file)
+        self.video_process_thread.finished.connect(self.video_spawn_over)
+        self.video_button.clicked.connect(
+            lambda: self.video_spawn(
+                self.file_label.text(),
+                self.get_output_name()
+            )
+        )
 
         # show window
         self.show()
         self.autoplay_thread.start()
+
+    def get_output_name(self):
+        return os.path.basename(self.file_label.text())[::-1].replace(".mnote"[::-1], ".mp4"[::-1], 1)[::-1]
+
+    def video_spawn(self, input_name, output_name):
+        info, notes = read_mnote.mnote_reader(self.file_label.text())
+        self.video_progress = QProgressDialog("生成视频中", "取消", 0, len(notes), self)
+        self.video_progress.setLabelText(f"输入：{input_name}\n输出：{output_name}")
+        self.video_progress.setWindowTitle("生成视频中")
+        self.video_process_thread.insert_note(input_name, output_name)
+        self.video_process_thread.start()
+        self.video_process_thread.processUpdate.connect(self.video_progress.setValue)
+
+    def video_spawn_over(self):
+        self.video_progress.disconnect()
+        self.video_progress.deleteLater()
+        self.video_progress = None
+        QMessageBox.information(self, "视频生成成功！", f"输出位置：{os.path.abspath(self.get_output_name())}")
 
     def play_over(self):
         self.play_button.setText("播放")
@@ -110,6 +145,7 @@ class MainWidget(QWidget):
 
     def load_down(self, text, val):
         self.play_slide.setEnabled(True)
+        self.video_button.setEnabled(True)
         self.play_slide.setMaximum(val - 1)
         self.play_button.setEnabled(True)
         self.play_button.setText("播放")

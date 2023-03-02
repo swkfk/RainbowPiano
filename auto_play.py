@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from read_mnote import mnote_reader
+from read_mnote import mnote_reader, note_width_ms
 
 
 class AutoPlayThread(QThread):
@@ -47,7 +47,7 @@ class AutoPlayThread(QThread):
             print(f"{self.play_idx=}")
             self.playChange.emit(self.play_idx)
             self.keyPressed.emit(self.note[self.play_idx][0] - 1)  # This -1 is important!
-            self.msleep(int(60000 / (self.info["bpm"] * self.info["beat"]) * self.note[self.play_idx][1]))
+            self.msleep(note_width_ms(self.info["bpm"], self.info["beat"], self.note[self.play_idx][1]))
             self.play_idx += 1 if self.on_play else 0
 
     def pause(self):
