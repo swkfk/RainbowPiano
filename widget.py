@@ -37,7 +37,7 @@ class MainWidget(QWidget):
         )
         self.label_center.set_color(QtGui.QColor(102, 204, 255), QtGui.QColor(0, 0, 0, 100))
         self.main_label_anim = QPropertyAnimation(self.label_center, b"color_anim")
-        self.main_label_anim.setDuration(300)
+        self.main_label_anim.setDuration(10)
 
         self.hint_labels = []
         for idx in range(7):
